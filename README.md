@@ -1,6 +1,6 @@
 # 🧾 AI Invoice Processor
 
-**Live demo:** [LINK — add after deploying]
+**Live demo:** https://jax-invoice-ai.streamlit.app
 
 An AI tool that reads invoice PDFs, pulls out the key data, and flags the ones a person actually needs to look at.
 
@@ -28,10 +28,10 @@ The `sample_invoices/` folder has 7 fictional invoices, including two with plant
 
 | Invoice | Planted problem | Caught? |
 |---|---|---|
-| `05_copper_state_plumbing_MATH_ERROR.pdf` | One line amount is wrong and the total doesn't add up | [fill in] |
-| `06_desert_office_supply_DUPLICATE.pdf` | Same invoice submitted twice | [fill in] |
+| `05_copper_state_plumbing_MATH_ERROR.pdf` | One line amount is wrong and the total doesn't add up | ✅ Yes |
+| `06_desert_office_supply_DUPLICATE.pdf` | Same invoice submitted twice | ✅ Yes |
 
-Fields extracted correctly: **[X] of [Y]** · Average processing time: **[Z] seconds per invoice**
+All 7 invoices extracted correctly (vendor, invoice #, dates, totals) · 2 of 2 planted errors caught · 0 false flags
 
 ## How it works
 
