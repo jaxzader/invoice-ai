@@ -4,6 +4,7 @@ Run locally with:  streamlit run app.py
 """
 
 import os
+from pathlib import Path
 
 import pandas as pd
 import streamlit as st
@@ -34,38 +35,50 @@ st.write(
 
 api_key = get_api_key()
 model = st.sidebar.text_input("Model", value=DEFAULT_MODEL)
-st.sidebar.caption("Try the sample invoices in the `sample_invoices/` folder of the GitHub repo.")
+st.sidebar.caption(
+    "The sample invoices are fictional. Two have planted problems: a math error and a duplicate."
+)
 
-uploaded_files = st.file_uploader("Upload invoice PDFs", type="pdf", accept_multiple_files=True)
+SAMPLE_DIR = Path(__file__).parent / "sample_invoices"
+sample_paths = sorted(SAMPLE_DIR.glob("*.pdf"))
 
-if not uploaded_files:
-    st.info("Upload one or more invoice PDFs to get started.")
-    st.stop()
 
-if not api_key:
-    st.warning("Add a Groq API key in the sidebar to process invoices.")
-    st.stop()
-
-# ---------- Process ----------
-if st.button("Process invoices", type="primary"):
+def process(files):
+    """Run extraction + validation on a list of (name, file) pairs and save the results."""
     results = []
     seen = set()  # tracks vendor + invoice number for duplicate detection
     progress = st.progress(0.0, text="Starting...")
 
-    for i, file in enumerate(uploaded_files, start=1):
-        progress.progress(i / len(uploaded_files), text=f"Reading {file.name}...")
+    for i, (name, file) in enumerate(files, start=1):
+        progress.progress(i / len(files), text=f"Reading {name}...")
         try:
             text = read_pdf_text(file)
             if not text:
                 raise ValueError("No text found. This might be a scanned image PDF.")
             data = extract_invoice(text, api_key, model)
             issues = validate_invoice(data, seen)
-            results.append({"file": file.name, "data": data, "issues": issues, "error": None})
+            results.append({"file": name, "data": data, "issues": issues, "error": None})
         except Exception as e:
-            results.append({"file": file.name, "data": None, "issues": [], "error": str(e)})
+            results.append({"file": name, "data": None, "issues": [], "error": str(e)})
 
     progress.empty()
     st.session_state["results"] = results
+
+
+uploaded_files = st.file_uploader("Upload invoice PDFs", type="pdf", accept_multiple_files=True)
+
+if not api_key:
+    st.warning("Add a Groq API key in the sidebar to process invoices.")
+    st.stop()
+
+# ---------- Process ----------
+if uploaded_files:
+    if st.button("Process invoices", type="primary"):
+        process([(f.name, f) for f in uploaded_files])
+else:
+    st.info("Upload your own invoice PDFs, or try it instantly with 7 sample invoices.")
+    if sample_paths and st.button("▶ Try the sample invoices", type="primary"):
+        process([(p.name, p) for p in sample_paths])
 
 results = st.session_state.get("results")
 if not results:
