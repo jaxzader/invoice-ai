@@ -1,0 +1,13 @@
+# Never commit your API key
+.streamlit/secrets.toml
+.env
+
+__pycache__/
+*.pyc
+.venv/
+venv/
+.DS_Store
+
+# Streamlit agent skills (local only)
+.agents/
+.claude/
